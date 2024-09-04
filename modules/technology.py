@@ -50,8 +50,8 @@ class Technology(Module):
     def __init__(self):
         super().__init__("technology")
 
-    async def run(self, session: aiohttp.ClientSession, base_url: str):
-        async with session.get(base_url) as response:
+    async def run(self, session: aiohttp.ClientSession, args):
+        async with session.get(args.url) as response:
             headers = response.headers
             cookies = response.cookies
             html = await response.text()

@@ -15,8 +15,8 @@ class Favicon(Module):
     def __init__(self):
         super().__init__("favicon")
 
-    async def run(self, session: aiohttp.ClientSession, base_url: str):
-        async with session.get(urljoin(base_url, "favicon.ico")) as response:
+    async def run(self, session: aiohttp.ClientSession, args):
+        async with session.get(urljoin(args.url, "favicon.ico")) as response:
             if response.status == 200:
                 favicon_hash = hashlib.md5(await response.read()).hexdigest()
 

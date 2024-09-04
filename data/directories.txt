@@ -1,6 +1,5 @@
 .git
 .svn
-.hg
 .env
 README
 README.md

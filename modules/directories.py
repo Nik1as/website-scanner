@@ -19,6 +19,8 @@ class Directories(Module):
             if response.status != 404:
                 return directory
 
-    async def run(self, session: aiohttp.ClientSession, base_url: str):
-        results = await asyncio.gather(*[self.check(session, base_url, directory) for directory in DIRECTORIES])
+    async def run(self, session: aiohttp.ClientSession, args):
+        results = await asyncio.gather(*[self.check(session, args.url, directory)
+                                         for directory in DIRECTORIES
+                                         if "/" + directory not in args.ignore])
         return [result for result in results if result is not None]

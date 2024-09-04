@@ -36,13 +36,15 @@ class Crawler(Module):
     def __init__(self):
         super().__init__("crawler")
 
-    async def run(self, session: aiohttp.ClientSession, base_url: str):
+    async def run(self, session: aiohttp.ClientSession, args):
         directories = dict()
         emails = set()
         comments = set()
 
-        async def crawl(curr_url: str, depth: int):
+        async def crawl(curr_url: str, depth: int, args):
             if depth > MAX_DEPTH:
+                return
+            if urlparse(curr_url).path in args.ignore:
                 return
 
             try:
@@ -97,15 +99,15 @@ class Crawler(Module):
                                 urls.add(new_url)
                             directory.url_parameters[key].update(values)
 
-                    await asyncio.gather(*[crawl(new_url, depth + 1) for new_url in urls])
+                    await asyncio.gather(*[crawl(new_url, depth + 1, args) for new_url in urls])
             except (aiohttp.ClientError, asyncio.TimeoutError):
                 pass
 
-        parsed = urlparse(base_url)
+        parsed = urlparse(args.url)
         directory = Directory(parsed.path)
         directories[parsed.path] = directory
 
-        await crawl(base_url, 1)
+        await crawl(args.url, 1, args)
 
         return {
             "directories": {d.directory: d.json() for d in directories.values()},

@@ -9,8 +9,8 @@ class Basic(Module):
     def __init__(self):
         super().__init__("basic")
 
-    async def run(self, session: aiohttp.ClientSession, base_url: str):
-        async with session.get(base_url, allow_redirects=True) as response:
+    async def run(self, session: aiohttp.ClientSession, args):
+        async with session.get(args.url, allow_redirects=True) as response:
             result = dict()
 
             content = await response.text()

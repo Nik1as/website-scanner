@@ -10,8 +10,8 @@ class Headers(Module):
     def __init__(self):
         super().__init__("headers")
 
-    async def run(self, session: aiohttp.ClientSession, base_url: str):
-        async with session.get(base_url) as response:
+    async def run(self, session: aiohttp.ClientSession, args):
+        async with session.get(args.url) as response:
             result = dict()
             for header in INTERESTING_HEADERS:
                 if header in response.headers:

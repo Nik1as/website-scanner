@@ -13,9 +13,9 @@ class TLS(Module):
     def __init__(self):
         super().__init__("tls")
 
-    async def run(self, session: aiohttp.ClientSession, base_url: str):
+    async def run(self, session: aiohttp.ClientSession, args):
         try:
-            parsed = urlparse(base_url)
+            parsed = urlparse(args.url)
             hostname = parsed.hostname
             ip = socket.gethostbyname(hostname)
             port = parsed.port or 443

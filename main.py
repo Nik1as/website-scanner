@@ -14,6 +14,7 @@ def parse_args():
     parser.add_argument("-o", "--output", type=str, required=True, help="Output json file")
     parser.add_argument("-c", "--cookie", type=str, required=False, default="", help="Cookie")
     parser.add_argument("-t", "--timeout", type=int, required=False, default=60, help="Timeout")
+    parser.add_argument("-i", "--ignore", type=str, required=False, nargs="*", default=["/logout"], help="Directories to ignore")
     parser.add_argument("--user-agent", type=str, required=False, default="webscan", help="User Agent")
 
     return parser.parse_args()
@@ -28,8 +29,10 @@ async def main():
     if args.user_agent:
         headers["user-agent"] = args.user_agent
 
-    async with aiohttp.ClientSession(headers=headers, timeout=aiohttp.ClientTimeout(args.timeout)) as session:
-        tasks = [module().start(session, args.url) for module in Module.modules]
+    async with aiohttp.ClientSession(headers=headers,
+                                     timeout=aiohttp.ClientTimeout(args.timeout),
+                                     connector=aiohttp.TCPConnector(ssl=False)) as session:
+        tasks = [module().start(session, args) for module in Module.modules]
         results = await asyncio.gather(*tasks)
 
         output = dict()
