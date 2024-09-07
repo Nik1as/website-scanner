@@ -1,0 +1,7 @@
+[
+  "<script>alert(1)</script>",
+  "<scripT>alert(1)</scripT>",
+  "<img src=x onerror=alert(1)/>",
+  "<ImG src=x onerror=alert(1)/>",
+  "<svg onload=alert(1)>"
+]

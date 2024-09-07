@@ -12,7 +12,6 @@ from utils import parse_form
 HTML_COMMENT_REGEX = re.compile(r"<!--(.*?)-->", re.DOTALL)
 EMAIL_REGEX = re.compile(r"\S+@\S+\.\S+")
 HTTP_URL_REGEX = re.compile(r"https?://([a-zA-Z0-9.-]+)")
-MAX_DEPTH = 1
 
 
 class Directory:
@@ -25,9 +24,9 @@ class Directory:
     def json(self):
         result = dict()
         if self.url_parameters:
-            result["url_parameters"] = {k: list(v) for k, v in self.url_parameters.items()}
+            result["url-parameters"] = {k: list(v) if len(v) > 1 else list(v)[0] for k, v in self.url_parameters.items()}
         if self.post_parameters:
-            result["post_parameters"] = {k: list(v) for k, v in self.post_parameters.items()}
+            result["post-parameters"] = {k: list(v) if len(v) > 1 else list(v)[0] for k, v in self.post_parameters.items()}
         return result
 
 
@@ -42,9 +41,7 @@ class Crawler(Module):
         comments = set()
 
         async def crawl(curr_url: str, depth: int, args):
-            if depth > MAX_DEPTH:
-                return
-            if urlparse(curr_url).path in args.ignore:
+            if depth > args.depth:
                 return
 
             try:
@@ -57,15 +54,16 @@ class Crawler(Module):
                     for match in HTML_COMMENT_REGEX.findall(html):
                         comments.add(match.strip())
                     for form in soup.find_all("form"):
-                        method, action, args = parse_form(form)
+                        method, action, params = parse_form(form)
+                        path = urlparse(urljoin(curr_url, action)).path
 
-                        if action not in directories:
-                            directory = Directory(action)
-                            directories[action] = directory
+                        if path not in directories:
+                            directory = Directory(path)
+                            directories[path] = directory
                         else:
-                            directory = directories[action]
+                            directory = directories[path]
 
-                        for name, value in args.items():
+                        for name, value in params.items():
                             if method.casefold() == "post":
                                 directory.post_parameters[name].add(value)
                             elif method.casefold() == "get":
@@ -87,6 +85,8 @@ class Crawler(Module):
                             new_url = urljoin(curr_url, href)
 
                         parsed = urlparse(new_url)
+                        if parsed.path in args.ignore:
+                            continue
                         if parsed.path not in directories:
                             directory = Directory(parsed.path)
                             directories[parsed.path] = directory

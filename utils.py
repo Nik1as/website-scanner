@@ -1,7 +1,37 @@
+import os
+import traceback
+from importlib import util
 from urllib.parse import parse_qs, urlparse, ParseResult, urlencode
 
 import bs4
 from bs4 import BeautifulSoup
+
+
+def unique_not_none(seq):
+    results = set(seq)
+    if None in results:
+        results.remove(None)
+    return list(results)
+
+
+def load_module(path):
+    name = os.path.split(path)[-1]
+    spec = util.spec_from_file_location(name, path)
+    module = util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_modules(path):
+    dirpath = os.path.dirname(path)
+
+    for fname in os.listdir(dirpath):
+        if not fname.startswith(".") and \
+                not fname.startswith("__") and fname.endswith(".py"):
+            try:
+                load_module(os.path.join(dirpath, fname))
+            except:
+                traceback.print_exc()
 
 
 def get_forms(html: str):
@@ -17,7 +47,7 @@ def parse_form(form: bs4.element.Tag):
         name = input_tag.get("name", None)
         if name is None:
             continue
-        value = input_tag.get("value", None)
+        value = input_tag.get("value", "")
         args[name] = value
     return method, action, args
 

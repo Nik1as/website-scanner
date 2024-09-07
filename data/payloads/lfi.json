@@ -1,0 +1,196 @@
+{
+  "linux": {
+    "separators": [
+      [
+        "..",
+        "/"
+      ],
+      [
+        "..",
+        "//"
+      ],
+      [
+        "..",
+        "%2F"
+      ],
+      [
+        "..",
+        "%2F%2F"
+      ],
+      [
+        "....",
+        "//"
+      ],
+      [
+        "..",
+        "////"
+      ]
+    ],
+    "files": [
+      {
+        "path": [
+          "etc",
+          "passwd"
+        ],
+        "content": [
+          "root:x",
+          "daemon:",
+          "bin:",
+          "sys:",
+          "sync:",
+          "games:"
+        ]
+      },
+      {
+        "path": [
+          "etc",
+          "group"
+        ],
+        "content": [
+          "root:x:0:",
+          "daemon:x:1:",
+          "bin:x:2:",
+          "sys:x:3:"
+        ]
+      },
+      {
+        "path": [
+          "etc",
+          "hosts"
+        ],
+        "content": [
+          "127.0.0.1    localhost"
+        ]
+      },
+      {
+        "path": [
+          "etc",
+          "motd"
+        ],
+        "content": [
+          "ABSOLUTELY NO WARRANTY",
+          "Linux system are free software"
+        ]
+      },
+      {
+        "path": [
+          "proc",
+          "self",
+          "environ"
+        ],
+        "content": [
+          "LS_COLORS=",
+          "HOME=/home/"
+        ]
+      },
+      {
+        "path": [
+          "proc",
+          "version"
+        ],
+        "content": [
+          "gcc version",
+          "SSH_TTY=",
+          "SSH_CONNECTION="
+        ]
+      },
+      {
+        "path": [
+          "proc",
+          "cmdline"
+        ],
+        "content": [
+          "BOOT_IMAGE=",
+          "biosdevname="
+        ]
+      }
+    ]
+  },
+  "windows": {
+    "separators": [
+      [
+        "..",
+        "\\"
+      ],
+      [
+        "..",
+        "\\\\"
+      ],
+      [
+        "..",
+        "%5C"
+      ],
+      [
+        "..",
+        "%5C%5C"
+      ]
+    ],
+    "files": [
+      {
+        "path": [
+          "boot.ini"
+        ],
+        "content": [
+          "screenEnabled",
+          "[BOOTCTR9]",
+          "splash = "
+        ]
+      },
+      {
+        "path": [
+          "WINDOWS",
+          "win.ini"
+        ],
+        "content": [
+          "[mci extensions]",
+          "adts=MPEGVideo"
+        ]
+      },
+      {
+        "path": [
+          "WINDOWS",
+          "php.ini"
+        ],
+        "content": [
+          "About php.ini",
+          "log_errors",
+          "output_buffering"
+        ]
+      },
+      {
+        "path": [
+          "WINDOWS",
+          "system32",
+          "drivers",
+          "etc",
+          "hosts"
+        ],
+        "content": [
+          "127.0.0.1    localhost"
+        ]
+      },
+      {
+        "path": [
+          "WINNT",
+          "php.ini"
+        ],
+        "content": [
+          "About php.ini",
+          "log_errors",
+          "output_buffering"
+        ]
+      },
+      {
+        "path": [
+          "php",
+          "php.ini"
+        ],
+        "content": [
+          "About php.ini",
+          "log_errors",
+          "output_buffering"
+        ]
+      }
+    ]
+  }
+}

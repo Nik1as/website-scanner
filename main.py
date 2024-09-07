@@ -5,6 +5,7 @@ import json
 import aiohttp
 
 from modules import Module
+from vulns import Vuln
 
 
 def parse_args():
@@ -14,8 +15,12 @@ def parse_args():
     parser.add_argument("-o", "--output", type=str, required=True, help="Output json file")
     parser.add_argument("-c", "--cookie", type=str, required=False, default="", help="Cookie")
     parser.add_argument("-t", "--timeout", type=int, required=False, default=60, help="Timeout")
-    parser.add_argument("-i", "--ignore", type=str, required=False, nargs="*", default=["/logout"], help="Directories to ignore")
+    parser.add_argument("-i", "--ignore", type=str, required=False, nargs="*", default=["/logout"], help="Directories to ignore e.g. /logout")
     parser.add_argument("--user-agent", type=str, required=False, default="webscan", help="User Agent")
+    parser.add_argument("--depth", type=int, required=False, default=3, help="Maximum crawler depth")
+
+    parser.add_argument("--vulns", required=False, action="store_true", help="Scan for vulnerabilities")
+    parser.add_argument("--lfi-depth", type=int, required=False, default=5, help="Maximum lfi depth")
 
     return parser.parse_args()
 
@@ -29,19 +34,32 @@ async def main():
     if args.user_agent:
         headers["user-agent"] = args.user_agent
 
+    output = dict()
     async with aiohttp.ClientSession(headers=headers,
                                      timeout=aiohttp.ClientTimeout(args.timeout),
                                      connector=aiohttp.TCPConnector(ssl=False)) as session:
         tasks = [module().start(session, args) for module in Module.modules]
         results = await asyncio.gather(*tasks)
 
-        output = dict()
         for name, result in results:
             if result:
                 output[name] = result
 
-        with open(args.output, "w") as outfile:
-            json.dump(output, outfile, indent=2)
+    if args.vulns:
+        async with aiohttp.ClientSession(headers=headers,
+                                         timeout=aiohttp.ClientTimeout(args.timeout),
+                                         connector=aiohttp.TCPConnector(ssl=False)) as session:
+            output["vulnerabilities"] = []
+
+            dirs = output["crawler"]["directories"]
+            tasks = [vuln().run(session, args, dirs) for vuln in Vuln.vulns]
+            results = await asyncio.gather(*tasks)
+            for result in results:
+                output["vulnerabilities"].extend(result)
+            output["vulnerabilities"].sort()
+
+    with open(args.output, "w") as outfile:
+        json.dump(output, outfile, indent=2)
 
 
 if __name__ == "__main__":

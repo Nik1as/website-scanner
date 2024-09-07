@@ -2,6 +2,8 @@ import aiohttp
 
 from modules import Module
 
+METHODS = ["get", "post", "put", "delete", "head", "options", "patch"]
+
 
 class Methods(Module):
 
@@ -9,12 +11,9 @@ class Methods(Module):
         super().__init__("methods")
 
     async def run(self, session: aiohttp.ClientSession, args):
-        methods = [("get", session.get), ("post", session.post), ("put", session.put), ("delete", session.delete), ("head", session.head),
-                   ("options", session.options), ("patch", session.patch)]
-
         result = []
-        for method, func in methods:
-            async with func(args.url) as response:
+        for method in METHODS:
+            async with session.request(method, args.url) as response:
                 if response.status not in (405, 501):
                     result.append(method)
 
