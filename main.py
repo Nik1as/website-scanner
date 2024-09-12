@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument("-i", "--ignore", type=str, required=False, nargs="*", default=["/logout"], help="Directories to ignore e.g. /logout")
     parser.add_argument("--user-agent", type=str, required=False, default="webscan", help="User Agent")
     parser.add_argument("--depth", type=int, required=False, default=3, help="Maximum crawler depth")
+    parser.add_argument("--proxy", type=str, required=False, help="Proxy server")
 
     parser.add_argument("--vulns", required=False, action="store_true", help="Scan for vulnerabilities")
     parser.add_argument("--lfi-depth", type=int, required=False, default=5, help="Maximum lfi depth")

@@ -7,7 +7,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from modules import Module
-from utils import parse_form
+from utils import parse_form, get_req_kwargs
 
 HTML_COMMENT_REGEX = re.compile(r"<!--(.*?)-->", re.DOTALL)
 EMAIL_REGEX = re.compile(r"\S+@\S+\.\S+")
@@ -45,7 +45,7 @@ class Crawler(Module):
                 return
 
             try:
-                async with session.get(curr_url) as response:
+                async with session.get(curr_url, **get_req_kwargs(args)) as response:
                     html = await response.text()
                     soup = BeautifulSoup(html, "html.parser")
 

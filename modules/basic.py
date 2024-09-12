@@ -2,6 +2,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from modules import Module
+from utils import get_req_kwargs
 
 
 class Basic(Module):
@@ -10,7 +11,7 @@ class Basic(Module):
         super().__init__("basic")
 
     async def run(self, session: aiohttp.ClientSession, args):
-        async with session.get(args.url, allow_redirects=True) as response:
+        async with session.get(args.url, allow_redirects=True, **get_req_kwargs(args)) as response:
             result = dict()
 
             content = await response.text()

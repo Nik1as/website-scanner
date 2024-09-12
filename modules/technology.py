@@ -4,6 +4,7 @@ import re
 import aiohttp
 
 from modules import Module
+from utils import get_req_kwargs
 
 with open("data/technologies.json", "r") as f:
     TECHNOLOGIES = json.load(f)
@@ -51,7 +52,7 @@ class Technology(Module):
         super().__init__("technology")
 
     async def run(self, session: aiohttp.ClientSession, args):
-        async with session.get(args.url) as response:
+        async with session.get(args.url, **get_req_kwargs(args)) as response:
             headers = response.headers
             cookies = response.cookies
             html = await response.text()

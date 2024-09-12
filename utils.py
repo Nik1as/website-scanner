@@ -4,7 +4,13 @@ from importlib import util
 from urllib.parse import parse_qs, urlparse, ParseResult, urlencode
 
 import bs4
-from bs4 import BeautifulSoup
+
+
+def get_req_kwargs(args):
+    kwargs = dict()
+    if args.proxy is not None:
+        kwargs["proxy"] = args.proxy
+    return kwargs
 
 
 def unique_not_none(seq):
@@ -35,7 +41,7 @@ def load_modules(path):
 
 
 def get_forms(html: str):
-    soup = BeautifulSoup(html, "html.parser")
+    soup = bs4.BeautifulSoup(html, "html.parser")
     return soup.findAll("form")
 
 
