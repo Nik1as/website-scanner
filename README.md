@@ -16,7 +16,7 @@ A fast and powerful website scanner for CTFs.
 ## Usage
 
 ```
-usage: main.py [-h] -u URL -o OUTPUT [-c COOKIE] [-t TIMEOUT] [-i [IGNORE ...]] [--user-agent USER_AGENT] [--depth DEPTH] [--vulns] [--lfi-depth LFI_DEPTH]
+usage: main.py [-h] -u URL [-o OUTPUT] [-c COOKIE] [-t TIMEOUT] [-i [IGNORE ...]] [--user-agent USER_AGENT] [--depth DEPTH] [--proxy PROXY] [--auth AUTH] [--vulns] [--lfi-depth LFI_DEPTH]
 
 Scan a website
 
@@ -29,8 +29,8 @@ options:
   -i [IGNORE ...], --ignore [IGNORE ...]  Directories to ignore e.g. /logout
   --user-agent USER_AGENT                 User Agent
   --depth DEPTH                           Maximum crawler depth
-  
+  --proxy PROXY                           Proxy server
+  --auth AUTH                             Basic Authentication <username>:<password>
   --vulns                                 Scan for vulnerabilities
   --lfi-depth LFI_DEPTH                   Maximum lfi depth
-
 ```

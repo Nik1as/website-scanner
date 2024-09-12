@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import aiohttp
+from aiohttp import BasicAuth
 
 from modules import Module
 from utils import print_json_tree
@@ -20,6 +21,7 @@ def parse_args():
     parser.add_argument("--user-agent", type=str, required=False, default="webscan", help="User Agent")
     parser.add_argument("--depth", type=int, required=False, default=3, help="Maximum crawler depth")
     parser.add_argument("--proxy", type=str, required=False, help="Proxy server")
+    parser.add_argument("--auth", type=str, required=False, help="Basic Authentication <username>:<password>")
 
     parser.add_argument("--vulns", required=False, action="store_true", help="Scan for vulnerabilities")
     parser.add_argument("--lfi-depth", type=int, required=False, default=5, help="Maximum lfi depth")
@@ -36,10 +38,16 @@ async def main():
     if args.user_agent:
         headers["user-agent"] = args.user_agent
 
+    auth = None
+    if args.auth is not None:
+        username, password = args.auth.split(":")
+        auth = BasicAuth(username, password)
+
     output = dict()
     async with aiohttp.ClientSession(headers=headers,
                                      timeout=aiohttp.ClientTimeout(args.timeout),
-                                     connector=aiohttp.TCPConnector(ssl=False)) as session:
+                                     connector=aiohttp.TCPConnector(ssl=False),
+                                     auth=auth) as session:
         tasks = [module().start(session, args) for module in Module.modules]
         results = await asyncio.gather(*tasks)
 
@@ -50,7 +58,8 @@ async def main():
     if args.vulns:
         async with aiohttp.ClientSession(headers=headers,
                                          timeout=aiohttp.ClientTimeout(args.timeout),
-                                         connector=aiohttp.TCPConnector(ssl=False)) as session:
+                                         connector=aiohttp.TCPConnector(ssl=False),
+                                         auth=auth) as session:
             output["vulnerabilities"] = []
 
             dirs = output["crawler"]["directories"]
