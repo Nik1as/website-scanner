@@ -5,6 +5,7 @@ import json
 import aiohttp
 
 from modules import Module
+from utils import print_json_tree
 from vulns import Vuln
 
 
@@ -12,7 +13,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Scan a website",
                                      formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50))
     parser.add_argument("-u", "--url", type=str, required=True, help="URL to scan")
-    parser.add_argument("-o", "--output", type=str, required=True, help="Output json file")
+    parser.add_argument("-o", "--output", type=str, required=False, help="Output json file")
     parser.add_argument("-c", "--cookie", type=str, required=False, default="", help="Cookie")
     parser.add_argument("-t", "--timeout", type=int, required=False, default=60, help="Timeout")
     parser.add_argument("-i", "--ignore", type=str, required=False, nargs="*", default=["/logout"], help="Directories to ignore e.g. /logout")
@@ -59,8 +60,14 @@ async def main():
                 output["vulnerabilities"].extend(result)
             output["vulnerabilities"].sort()
 
-    with open(args.output, "w") as outfile:
-        json.dump(output, outfile, indent=2)
+    for title, result in sorted(output.items()):
+        print("=" * 5 + " " + title.upper() + " " + "=" * 5)
+        print_json_tree(result)
+        print()
+
+    if args.output is not None:
+        with open(args.output, "w") as outfile:
+            json.dump(output, outfile, indent=2)
 
 
 if __name__ == "__main__":

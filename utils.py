@@ -6,6 +6,24 @@ from urllib.parse import parse_qs, urlparse, ParseResult, urlencode
 import bs4
 
 
+def print_json_tree(data, indent=""):
+    if isinstance(data, dict):
+        for i, (key, value) in enumerate(data.items()):
+            prefix = "└─ " if i == len(data) - 1 else "├─ "
+            print(indent + prefix + f"{key}", end="")
+            if isinstance(value, (dict, list)):
+                print()
+                print_json_tree(value, indent + ("   " if i == len(data) - 1 else "│  "))
+            else:
+                print(f": {value}")
+    elif isinstance(data, list):
+        for i, item in enumerate(data):
+            prefix = "└─ " if i == len(data) - 1 else "├─ "
+            print(indent + prefix + str(item))
+    else:
+        print(indent + str(data))
+
+
 def get_req_kwargs(args):
     kwargs = dict()
     if args.proxy is not None:
