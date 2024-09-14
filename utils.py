@@ -65,7 +65,7 @@ def get_forms(html: str):
 
 def parse_form(form: bs4.element.Tag):
     method = form.get("method", "get")
-    action = form.get("action", "/")
+    action = form.get("action", "")
     args = dict()
     for input_tag in form.findAll("input"):
         name = input_tag.get("name", None)
