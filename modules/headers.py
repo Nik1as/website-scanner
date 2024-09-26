@@ -3,7 +3,9 @@ import aiohttp
 from modules import Module
 from utils import get_req_kwargs
 
-INTERESTING_HEADERS = ["Server", "X-Powered-By", "PHP", "X-Version", "X-Runtime", "X-AspNet-Version"]
+INTERESTING_HEADERS = ["Server", "X-Powered-By", "Via", "X-AspNet-Version", "X-Backend-Server", "X-Powered-CMS", "X-PHP-Version", "X-Drupal-Cache",
+                       "X-Joomla-Version", "X-Generator", "X-Content-Type-Options", "X-XSS-Protection", "X-Frame-Options", "Content-Security-Policy",
+                       "Strict-Transport-Security", "X-Runtime", "X-Version", "X-Cache", "X-Backend"]
 
 
 class Headers(Module):
