@@ -7,11 +7,8 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from modules import Module
+from regex import HTML_COMMENT_REGEX, HTTP_URL_REGEX, EMAIL_REGEX
 from utils import parse_form, get_req_kwargs
-
-HTML_COMMENT_REGEX = re.compile(r"<!--(.*?)-->", re.DOTALL)
-EMAIL_REGEX = re.compile(r"\S+@\S+\.\S+")
-HTTP_URL_REGEX = re.compile(r"https?://([a-zA-Z0-9.-]+)")
 
 
 class Directory:
