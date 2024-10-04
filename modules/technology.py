@@ -2,9 +2,12 @@ import json
 import re
 
 import aiohttp
+from bs4 import BeautifulSoup
 
 from modules import Module
 from utils import get_req_kwargs
+
+NO_VERSION_FOUND = " "
 
 with open("data/technologies.json", "r") as f:
     TECHNOLOGIES = json.load(f)
@@ -12,38 +15,72 @@ with open("data/categories.json", "r") as f:
     CATEGORIES = json.load(f)
 
 
-def contains(v, regex):
-    if isinstance(v, bytes):
-        v = v.decode()
-    return re.compile(re.split(r"\\;", regex)[0], re.IGNORECASE).search(v)
+def search(value, regex):
+    if isinstance(value, bytes):
+        value = value.decode()
+
+    split = re.split(r"\\;version:\\", regex)
+    regex = split[0]
+    group = None
+    if len(split) > 1:
+        try:
+            group = int(split[1])
+        except ValueError:
+            pass
+
+    return re.search(regex, value, re.IGNORECASE), group
 
 
-def contains_dict(d1, d2):
-    for k2, v2 in d2.items():
-        v1 = d1.get(k2)
-        if v1:
-            if not contains(v1, v2):
-                return False
-        else:
-            return False
-    return True
+def match_dict(patterns, values):
+    version = None
+    for key, pattern in patterns.items():
+        value = values.get(key)
+        if value is not None:
+            match, group = search(value, pattern)
+            if match is not None:
+                if group is not None:
+                    version = match.group(group)
+                elif version is None:
+                    version = NO_VERSION_FOUND
+    return version
+
+
+def match_list(patterns, values):
+    version = None
+
+    if not isinstance(patterns, list):
+        patterns = [patterns]
+    if not isinstance(values, list):
+        values = [values]
+
+    for pattern in patterns:
+        for value in values:
+            match, group = search(value, pattern)
+            if match is not None:
+                if group is not None:
+                    version = match.group(group)
+                elif version is None:
+                    version = NO_VERSION_FOUND
+    return version
 
 
 def get_categories(spec):
     return [CATEGORIES[str(c_id)]["name"] for c_id in spec["cats"]]
 
 
-def add_app(techs, name, spec):
+def add_app(techs, name, version, spec):
     for category in get_categories(spec):
         if category not in techs:
-            techs[category] = []
+            techs[category] = dict()
         if name not in techs[category]:
-            techs[category].append(name)
+            techs[category][name] = version
             implies = spec.get("implies", [])
             if not isinstance(implies, list):
                 implies = [implies]
             for app_name in implies:
-                add_app(techs, app_name, TECHNOLOGIES[name])
+                add_app(techs, app_name, NO_VERSION_FOUND, TECHNOLOGIES[name])
+        elif techs[category][name] == NO_VERSION_FOUND:
+            techs[category][name] = version
 
 
 class Technology(Module):
@@ -53,24 +90,26 @@ class Technology(Module):
 
     async def run(self, session: aiohttp.ClientSession, args):
         async with session.get(args.url, **get_req_kwargs(args)) as response:
-            headers = response.headers
-            cookies = response.cookies
             html = await response.text()
+            soup = BeautifulSoup(html, "html.parser")
 
             results = dict()
             for name, spec in TECHNOLOGIES.items():
-                if "headers" in spec and contains_dict(headers, spec["headers"]):
-                    add_app(results, name, spec)
+                version = match_dict(spec.get("headers", dict()), response.headers)
+                if version is not None:
+                    add_app(results, name, version, spec)
 
-                if "cookies" in spec and contains_dict(cookies, spec["cookies"]):
-                    add_app(results, name, spec)
+                version = match_dict(spec.get("cookies", dict()), response.cookies)
+                if version is not None:
+                    add_app(results, name, version, spec)
 
-                patterns = spec.get("html", [])
-                if not isinstance(patterns, list):
-                    patterns = [patterns]
-                for pattern in patterns:
-                    if contains(html, pattern):
-                        add_app(results, name, spec)
-                        break
+                version = match_list(spec.get("html", []), html)
+                if version is not None:
+                    add_app(results, name, version, spec)
+
+                script_src = [tag["src"] for tag in soup.findAll('script', {"src": True})]
+                version = match_list(spec.get("scriptSrc", []), script_src)
+                if version is not None:
+                    add_app(results, name, version, spec)
 
             return results
