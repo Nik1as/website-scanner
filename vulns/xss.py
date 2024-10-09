@@ -21,6 +21,8 @@ class XSS(Vuln):
                 text = await response.text()
                 if payload in text:
                     return f"XSS: {method.upper()} {path} with parameter {param}"
+                if response.status >= 500:
+                    return f"ERROR {response.status}: {method.upper()} {path} with parameter {param}"
         except:
             pass
 

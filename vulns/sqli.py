@@ -22,6 +22,8 @@ class SQLI(Vuln):
                 text = text.casefold()
                 if any(msg in text for msg in PAYLOADS["error-based"]["messages"]):
                     return f"SQL-Injection (error-based): {method.upper()} {path} with parameter {param}"
+                if response.status >= 500:
+                    return f"ERROR {response.status}: {method.upper()} {path} with parameter {param}"
         except:
             pass
 

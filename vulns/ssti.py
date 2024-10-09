@@ -22,6 +22,8 @@ class SST(Vuln):
                 text = await response.text()
                 if str(num * num) in text:
                     return f"SSTI: {method.upper()} {path} with parameter {param} and payload {payload}"
+                if response.status >= 500:
+                    return f"ERROR {response.status}: {method.upper()} {path} with parameter {param}"
         except:
             pass
 

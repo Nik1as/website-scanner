@@ -21,6 +21,8 @@ class LFI(Vuln):
                 text = await response.text()
                 if any(s in text for s in content):
                     return f"LFI: {method.upper()} {path} with parameter {param}"
+                if response.status >= 500:
+                    return f"ERROR {response.status}: {method.upper()} {path} with parameter {param}"
         except:
             pass
 
