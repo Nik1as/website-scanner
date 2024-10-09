@@ -14,8 +14,11 @@ class Methods(Module):
     async def run(self, session: aiohttp.ClientSession, args):
         result = []
         for method in METHODS:
-            async with session.request(method, args.url, **get_req_kwargs(args)) as response:
-                if response.status not in (405, 501):
-                    result.append(method)
+            try:
+                async with session.request(method, args.url, **get_req_kwargs(args)) as response:
+                    if response.status not in (405, 501):
+                        result.append(method)
+            except aiohttp.ServerDisconnectedError:
+                pass
 
         return result

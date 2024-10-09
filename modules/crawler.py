@@ -37,12 +37,39 @@ class Crawler(Module):
         emails = set()
         comments = set()
 
-        async def crawl(curr_url: str, depth: int, args):
+        def add_to_directories(href: str, curr_url: str):
+            new_url = href
+            if re.match(HTTP_URL_REGEX, href):
+                href_domain = urlparse(href).netloc
+                if href_domain != urlparse(curr_url).netloc:
+                    return
+            else:
+                new_url = urljoin(curr_url, href)
+
+            parsed = urlparse(new_url)
+            if parsed.path in args.ignore:
+                return
+            if parsed.path not in directories:
+                directory = Directory(parsed.path)
+                directories[parsed.path] = directory
+                return new_url
+            else:
+                directory = directories[parsed.path]
+
+            new_param = False
+            for key, values in parse_qs(parsed.query).items():
+                if any(v not in directory.url_parameters[key] for v in values):
+                    new_param = True
+                directory.url_parameters[key].update(values)
+            if new_param:
+                return new_url
+
+        async def crawl(curr_url: str, depth: int):
             if depth > args.depth:
                 return
 
             try:
-                async with session.get(curr_url, **get_req_kwargs(args)) as response:
+                async with session.get(curr_url, **get_req_kwargs(args), allow_redirects=False) as response:
                     html = await response.text()
                     soup = BeautifulSoup(html, "html.parser")
 
@@ -67,44 +94,28 @@ class Crawler(Module):
                                 directory.url_parameters[name].add(value)
 
                     urls = set()
-                    curr_domain = urlparse(curr_url).netloc
+
+                    if "Location" in response.headers:
+                        location = response.headers["Location"]
+                        new_url = add_to_directories(location, curr_url)
+                        if new_url is not None:
+                            urls.add(new_url)
+
                     for link in soup.find_all("a"):
                         href = link.get("href")
                         if href is None:
                             continue
-
-                        new_url = href
-                        if re.match(HTTP_URL_REGEX, href):
-                            href_domain = urlparse(href).netloc
-                            if href_domain != curr_domain:
-                                continue
-                        else:
-                            new_url = urljoin(curr_url, href)
-
-                        parsed = urlparse(new_url)
-                        if parsed.path in args.ignore:
-                            continue
-                        if parsed.path not in directories:
-                            directory = Directory(parsed.path)
-                            directories[parsed.path] = directory
+                        new_url = add_to_directories(href, curr_url)
+                        if new_url is not None:
                             urls.add(new_url)
-                        else:
-                            directory = directories[parsed.path]
 
-                        for key, values in parse_qs(parsed.query).items():
-                            if any(v not in directory.url_parameters[key] for v in values):
-                                urls.add(new_url)
-                            directory.url_parameters[key].update(values)
-
-                    await asyncio.gather(*[crawl(new_url, depth + 1, args) for new_url in urls])
+                    await asyncio.gather(*[crawl(new_url, depth + 1) for new_url in urls])
             except (aiohttp.ClientError, asyncio.TimeoutError):
                 pass
 
-        parsed = urlparse(args.url)
-        directory = Directory(parsed.path)
-        directories[parsed.path] = directory
+        add_to_directories("", args.url)
 
-        await crawl(args.url, 1, args)
+        await crawl(args.url, 1)
 
         return {
             "directories": {d.directory: d.json() for d in directories.values()},
